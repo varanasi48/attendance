@@ -66,5 +66,5 @@ jobs:
         with:
           app-name: 'attendance-function-app'
           slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          package: './backend'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E08AFB891F6F43B287F6C703F5238A1B }}
