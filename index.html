@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+</head>
+<body>
+    <h1>Face Attendance System</h1>
+
+    <!-- Webcam Display -->
+    <video id="video" width="320" height="240" autoplay></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <br>
+
+    <!-- Phone Number Input -->
+    <label for="phone">Phone Number:</label>
+    <input type="text" id="phone" placeholder="Enter your phone number" required>
+    
+    <br><br>
+
+    <!-- Button to capture image -->
+    <button onclick="captureFace()">Capture Face</button>
+
+    <script src="app.js"></script>
+</body>
+</html>
