@@ -16,7 +16,7 @@ module.exports = async function (context, req) {
 
     try {
         // Call Face API to detect face (replace with actual logic)
-        const faceApiResponse = await axios.post('https://<your-face-api-endpoint>', {
+        const faceApiResponse = await axios.post('https://attendance-face.cognitiveservices.azure.com/ {
             image: faceImage,
             apiKey: process.env.FACE_API_KEY
         });
