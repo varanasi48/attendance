@@ -1,46 +1,62 @@
-const { FunctionApp } = require('@azure/functions');
 const axios = require('axios');
 const { MongoClient } = require('mongodb');
 
-// Example of an HTTP trigger function to mark attendance
 module.exports = async function (context, req) {
-    const { phoneNumber, faceImage } = req.body;
+    const { phoneNumber, faceImageBase64 } = req.body;
 
-    if (!phoneNumber || !faceImage) {
+    if (!phoneNumber || !faceImageBase64) {
         context.res = {
             status: 400,
-            body: "Phone number and face image are required."
+            body: "Phone number and face image (Base64) are required."
         };
         return;
     }
 
     try {
-        // Call Face API to detect face (replace with actual logic)
-        const faceApiResponse = await axios.post('https://attendance-face.cognitiveservices.azure.com/ {
-            image: faceImage,
-            apiKey: process.env.FACE_API_KEY
-        });
+        // Convert base64 image to buffer
+        const imageBuffer = Buffer.from(faceImageBase64, 'base64');
 
-        // Process face API response (e.g., verify face, extract data)
-        const faceDetected = faceApiResponse.data;
+        // Call Azure Face API
+        const faceApiResponse = await axios.post(
+            `${process.env.FACE_API_ENDPOINT}/face/v1.0/detect?returnFaceId=true`,
+            imageBuffer,
+            {
+                headers: {
+                    'Content-Type': 'application/octet-stream',
+                    'Ocp-Apim-Subscription-Key': process.env.FACE_API_KEY
+                }
+            }
+        );
 
-        // Save attendance to MongoDB (or other DB)
+        if (!faceApiResponse.data.length) {
+            context.res = {
+                status: 400,
+                body: "No face detected in the image."
+            };
+            return;
+        }
+
+        const faceId = faceApiResponse.data[0].faceId;
+
+        // Connect to MongoDB and save attendance
         const client = new MongoClient(process.env.MONGO_DB_CONNECTION_STRING);
         await client.connect();
         const db = client.db('attendanceDB');
         const collection = db.collection('attendance');
-        
+
         await collection.insertOne({
             phoneNumber,
-            faceDetected,
+            faceId,
             timestamp: new Date()
         });
 
         context.res = {
             status: 200,
-            body: { success: true, message: 'Attendance marked successfully!' }
+            body: { success: true, message: 'Attendance marked successfully.' }
         };
+
     } catch (error) {
+        console.error("Error:", error.message);
         context.res = {
             status: 500,
             body: { success: false, message: error.message }
