@@ -35,7 +35,8 @@ function sendToBackend(imageData, phoneNumber) {
     };
 
     // Use fetch API to send data to your backend (Azure Function/API)
-    fetch('YOUR_BACKEND_URL_HERE', {
+    fetch('https://attendance-function-app.azurewebsites.net/api/enroll
+', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
