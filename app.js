@@ -18,25 +18,24 @@ function captureFace() {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
     // Convert the canvas image to a base64 string
-    const imageData = canvas.toDataURL('image/jpeg');
-    
+    let imageData = canvas.toDataURL('image/jpeg'); // includes prefix
+    imageData = imageData.replace(/^data:image\/jpeg;base64,/, ''); // remove prefix
+
     // Get the phone number from the input field
     const phoneNumber = document.getElementById('phone').value;
-    
+
     // Send the data to the backend
     sendToBackend(imageData, phoneNumber);
 }
 
 // Function to send the captured image and phone number to the backend
-function sendToBackend(imageData, phoneNumber) {
+function sendToBackend(imageBase64, phoneNumber) {
     const data = {
-        image: imageData,
-        phone: phoneNumber
+        faceImageBase64: imageBase64,
+        phoneNumber: phoneNumber
     };
 
-    // Use fetch API to send data to your backend (Azure Function/API)
-    fetch('https://attendance-function-app.azurewebsites.net/api/enroll
-', {
+    fetch('https://attendance-function-app.azurewebsites.net/api/enroll', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -45,9 +44,11 @@ function sendToBackend(imageData, phoneNumber) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Data received:', data);
+        console.log('Server response:', data);
+        alert(data.message || 'Success!');
     })
     .catch((error) => {
         console.error('Error sending data:', error);
+        alert('Error sending data to server.');
     });
 }
