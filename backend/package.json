@@ -1,5 +1,5 @@
 {
-  "name": "attendance-backend",
+  "name": "attendance-function-app",
   "version": "1.0.0",
   "description": "Azure Function App for attendance marking with face recognition",
   "main": "index.js",
