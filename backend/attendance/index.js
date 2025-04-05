@@ -1,23 +1,27 @@
 module.exports = async function (context, req) {
-    // Log the incoming request for debugging purposes
-    context.log('Received request:', req.body);
+    context.log('Attendance function triggered.');
 
-    // Check if we are getting data from the request
-    if (!req.body || !req.body.phoneNumber || !req.body.faceImage) {
+    try {
+        const { phoneNumber, faceImage } = req.body;
+
+        // Simple test return without doing anything
         context.res = {
-            status: 400,
-            body: "Phone number and face image are required."
+            status: 200,
+            body: {
+                success: true,
+                message: 'Function received data successfully!',
+                phoneNumber,
+                receivedImage: faceImage ? true : false
+            }
         };
-        return;
+    } catch (error) {
+        context.res = {
+            status: 500,
+            body: {
+                success: false,
+                message: 'Error in function.',
+                error: error.message
+            }
+        };
     }
-
-    // Log the values we received
-    context.log('Phone Number:', req.body.phoneNumber);
-    context.log('Face Image:', req.body.faceImage);
-
-    // Return a success message if everything is good
-    context.res = {
-        status: 200,
-        body: { success: true, message: 'Data received successfully!' }
-    };
 };
