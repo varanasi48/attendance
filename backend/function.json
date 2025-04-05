@@ -1,0 +1,16 @@
+{
+  "bindings": [
+    {
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in",
+      "route": "index",   // This is the URL route for your function (e.g., /api/enroll)
+      "methods": ["post"]   // This defines that the function responds to POST requests
+    },
+    {
+      "name": "$return",
+      "type": "http",
+      "direction": "out"
+    }
+  ]
+}
