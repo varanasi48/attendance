@@ -39,7 +39,7 @@ function sendToBackend(imageData, phoneNumber) {
     console.log('Sending data to backend:', data);
 
     // Use fetch API to send data to your backend (Azure Function/API)
-    fetch('https://attendance-function-app.azurewebsites.net/attendance', {
+    fetch('https://attendance-function-app.azurewebsites.net/api/attendance', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
