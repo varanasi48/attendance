@@ -29,10 +29,10 @@ function captureFace() {
 }
 
 // Function to send the captured image and phone number to the backend
-function sendToBackend(imageBase64, phoneNumber) {
+function sendToBackend(imageData, phoneNumber) {
     const data = {
-        faceImageBase64: imageBase64,
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        faceImage: imageData
     };
 
     fetch('https://attendance-function-app.azurewebsites.net/', {
@@ -42,13 +42,20 @@ function sendToBackend(imageBase64, phoneNumber) {
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Server response:', data);
-        alert(data.message || 'Success!');
+    .then(async (response) => {
+        console.log("Status:", response.status);
+        const result = await response.json();
+        console.log("Response JSON:", result);
+
+        if (!response.ok) {
+            throw new Error(result.message || "Unknown error");
+        }
+
+        alert(result.message || "Attendance marked!");
     })
     .catch((error) => {
-        console.error('Error sending data:', error);
-        alert('Error sending data to server.');
+        console.error('Error sending data:', error.message);
+        alert("Failed to send data: " + error.message);
     });
 }
+
