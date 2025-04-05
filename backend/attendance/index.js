@@ -2,46 +2,53 @@ const axios = require('axios');
 const { MongoClient } = require('mongodb');
 
 module.exports = async function (context, req) {
+    const { phoneNumber, faceImage } = req.body;
+
+    // Log the request body to understand what we're receiving
+    context.log('Received body:', req.body);
+
+    if (!phoneNumber || !faceImage) {
+        context.res = {
+            status: 400,
+            body: "Phone number and face image are required."
+        };
+        context.log('Error: Missing phone number or face image');
+        return;
+    }
+
     try {
-        const { phoneNumber, faceImage } = req.body;
-        
-        console.log("Received request body:", req.body);
+        // Log before calling the Face API
+        context.log('Calling Face API with phoneNumber:', phoneNumber);
 
-        if (!phoneNumber || !faceImage) {
-            context.res = {
-                status: 400,
-                body: "Phone number and face image are required."
-            };
-            return;
-        }
-
-        // Call the Azure Face API
+        // Call the Face API (ensure the correct endpoint and parameters)
         const faceApiResponse = await axios.post(
             'https://attendance-face.cognitiveservices.azure.com/face/v1.0/detect',
-            Buffer.from(faceImage.split(',')[1], 'base64'), // Convert base64 to binary
+            Buffer.from(faceImage.split(',')[1], 'base64'),
             {
                 headers: {
-                    'Ocp-Apim-Subscription-Key': process.env.FACE_API_KEY, // Azure Face API subscription key
-                    'Content-Type': 'application/octet-stream' // Proper content type for binary data
+                    'Ocp-Apim-Subscription-Key': process.env.FACE_API_KEY,
+                    'Content-Type': 'application/octet-stream'
                 },
                 params: {
-                    returnFaceId: true // Ensure Face API returns face ID information
+                    returnFaceId: true
                 }
             }
         );
 
-        // Log Face API Response
-        console.log("Face API response:", faceApiResponse.data);
+        // Log the response from the Face API
+        context.log('Face API Response:', faceApiResponse.data);
 
-        // Save attendance info to MongoDB
+        // Save to MongoDB
         const client = new MongoClient(process.env.MONGO_DB_CONNECTION_STRING);
         await client.connect();
         const db = client.db('attendanceDB');
         const collection = db.collection('attendance');
-        
+
+        context.log('Inserting attendance data for phone:', phoneNumber);
+
         await collection.insertOne({
             phoneNumber,
-            faceDetected: faceApiResponse.data, // Store the face detection result
+            faceDetected: faceApiResponse.data,
             timestamp: new Date()
         });
 
@@ -49,10 +56,9 @@ module.exports = async function (context, req) {
             status: 200,
             body: { success: true, message: 'Attendance marked successfully!' }
         };
-
     } catch (error) {
-        // Log the error
-        console.error("Unexpected server error:", error);
+        // Log the error to see what caused the failure
+        context.log.error('Error in function execution:', error);
 
         context.res = {
             status: 500,
