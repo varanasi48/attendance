@@ -35,7 +35,7 @@ function sendToBackend(imageData, phoneNumber) {
         faceImage: imageData
     };
 
-    fetch('https://attendance-function-app.azurewebsites.net/', {
+    fetch('https://attendance-function-app.azurewebsites.net/attendance', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
