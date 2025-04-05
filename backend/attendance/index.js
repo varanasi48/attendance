@@ -1,64 +1,58 @@
-// Access the webcam and display the video feed
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
+const { MongoClient } = require('mongodb');
+const axios = require('axios');
 
-// Start the video feed from the webcam
-navigator.mediaDevices.getUserMedia({ video: true })
-    .then((stream) => {
-        video.srcObject = stream;
-    })
-    .catch((error) => {
-        console.log("Error accessing webcam:", error);
-    });
+module.exports = async function (context, req) {
+    const { phoneNumber, faceImage } = req.body;
 
-// Capture the image and send to backend
-function captureFace() {
-    // Draw the image on the canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    // Convert the canvas image to a base64 string
-    const imageData = canvas.toDataURL('image/jpeg');
-    
-    // Get the phone number from the input field
-    const phoneNumber = document.getElementById('phone').value;
-    
-    // Check if phone number is valid
-    if (!phoneNumber) {
-        console.error("Phone number is required");
+    if (!phoneNumber || !faceImage) {
+        context.res = {
+            status: 400,
+            body: "Phone number and face image are required."
+        };
         return;
     }
 
-    // Send the data to the backend
-    sendToBackend(imageData, phoneNumber);
-}
+    try {
+        console.log('Received data:', { phoneNumber, faceImage });
 
-// Function to send the captured image and phone number to the backend
-function sendToBackend(imageData, phoneNumber) {
-    const data = {
-        image: imageData,
-        phone: phoneNumber
-    };
+        // Face API call - ensure your face API endpoint is correct
+        const faceApiResponse = await axios.post('https://attendance-face.cognitiveservices.azure.com/face/v1.0/detect', 
+            {
+                data: faceImage
+            },
+            {
+                headers: {
+                    'Ocp-Apim-Subscription-Key': process.env.FACE_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            });
 
-    console.log("Data being sent:", data);  // Add logging to confirm the data being sent
+        console.log('Face API Response:', faceApiResponse.data);
 
-    fetch('https://attendance-function-app.azurewebsites.net/attendance', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)  // Ensure proper JSON format
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Data received:', data);
-        if (data.success) {
-            alert('Attendance marked successfully!');
-        } else {
-            alert('Failed to mark attendance!');
-        }
-    })
-    .catch((error) => {
-        console.error('Error sending data:', error);
-    });
-}
+        const faceDetected = faceApiResponse.data;
+
+        // Save to MongoDB
+        const client = new MongoClient(process.env.MONGO_DB_CONNECTION_STRING);
+        await client.connect();
+        const db = client.db('attendanceDB');
+        const collection = db.collection('attendance');
+
+        await collection.insertOne({
+            phoneNumber,
+            faceDetected,
+            timestamp: new Date()
+        });
+
+        context.res = {
+            status: 200,
+            body: { success: true, message: 'Attendance marked successfully!' }
+        };
+
+    } catch (error) {
+        console.error('Error:', error);  // Detailed error logging
+        context.res = {
+            status: 500,
+            body: { success: false, message: error.message || 'An error occurred.' }
+        };
+    }
+};
