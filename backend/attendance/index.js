@@ -2,15 +2,30 @@ const axios = require('axios');
 const { MongoClient } = require('mongodb');
 
 module.exports = async function (context, req) {
-    const { phone, image } = req.body;
+    try {
+        const { phoneNumber, faceImage } = req.body;
+        
+        console.log("Received request body:", req.body);
+        console.log("Phone:", phoneNumber);
+        console.log("Face image size:", faceImage ? faceImage.length : 'No image received');
 
-    if (!phone || !image) {
+        if (!phoneNumber || !faceImage) {
+            context.res = {
+                status: 400,
+                body: "Phone number and face image are required."
+            };
+            return;
+        }
+
+        // Continue with Face API, etc...
+    } catch (err) {
+        console.error("Unexpected server error:", err);
         context.res = {
-            status: 400,
-            body: "Phone and image are required."
+            status: 500,
+            body: "Internal server error."
         };
-        return;
     }
+};
 
     try {
         const faceApiResponse = await axios.post(
