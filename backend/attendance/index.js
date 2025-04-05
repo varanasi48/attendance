@@ -1,7 +1,9 @@
 module.exports = async function (context, req) {
-    const { phoneNumber, faceImage } = req.body;
+    // Log the incoming request for debugging purposes
+    context.log('Received request:', req.body);
 
-    if (!phoneNumber || !faceImage) {
+    // Check if we are getting data from the request
+    if (!req.body || !req.body.phoneNumber || !req.body.faceImage) {
         context.res = {
             status: 400,
             body: "Phone number and face image are required."
@@ -9,20 +11,13 @@ module.exports = async function (context, req) {
         return;
     }
 
-    try {
-        // Temporary code for testing, without Face API or MongoDB
-        context.log('Received data:', { phoneNumber, faceImage });
+    // Log the values we received
+    context.log('Phone Number:', req.body.phoneNumber);
+    context.log('Face Image:', req.body.faceImage);
 
-        context.res = {
-            status: 200,
-            body: { success: true, message: 'Received successfully!' }
-        };
-
-    } catch (error) {
-        context.log('Error:', error);
-        context.res = {
-            status: 500,
-            body: { success: false, message: error.message || 'An error occurred.' }
-        };
-    }
+    // Return a success message if everything is good
+    context.res = {
+        status: 200,
+        body: { success: true, message: 'Data received successfully!' }
+    };
 };
