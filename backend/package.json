@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "func start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests defined. Skipping.\""
   },
   "dependencies": {
     "@azure/functions": "^3.0.0",
