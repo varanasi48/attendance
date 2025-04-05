@@ -31,10 +31,14 @@ function captureFace() {
 // Function to send the captured image and phone number to the backend
 function sendToBackend(imageData, phoneNumber) {
     const data = {
-        phoneNumber: phoneNumber,
-        faceImage: imageData
+        image: imageData,
+        phone: phoneNumber
     };
 
+    // Log the data being sent
+    console.log('Sending data to backend:', data);
+
+    // Use fetch API to send data to your backend (Azure Function/API)
     fetch('https://attendance-function-app.azurewebsites.net/attendance', {
         method: 'POST',
         headers: {
@@ -42,20 +46,12 @@ function sendToBackend(imageData, phoneNumber) {
         },
         body: JSON.stringify(data)
     })
-    .then(async (response) => {
-        console.log("Status:", response.status);
-        const result = await response.json();
-        console.log("Response JSON:", result);
-
-        if (!response.ok) {
-            throw new Error(result.message || "Unknown error");
-        }
-
-        alert(result.message || "Attendance marked!");
+    .then(response => response.json())
+    .then(data => {
+        console.log('Data received:', data);
     })
     .catch((error) => {
-        console.error('Error sending data:', error.message);
-        alert("Failed to send data: " + error.message);
+        console.error('Error sending data:', error);
     });
 }
 
