@@ -1,43 +1,64 @@
-const axios = require('axios');
-const { MongoClient } = require('mongodb');
+// Access the webcam and display the video feed
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
 
-module.exports = async function (context, req) {
-    context.log('Function started');
-    context.log('Request body:', req.body);
+// Start the video feed from the webcam
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+        video.srcObject = stream;
+    })
+    .catch((error) => {
+        console.log("Error accessing webcam:", error);
+    });
 
-    const { phoneNumber, faceImage } = req.body;
-
-    if (!phoneNumber || !faceImage) {
-        context.res = {
-            status: 400,
-            body: "Phone number and face image are required."
-        };
-        context.log('Invalid input: Missing phone number or face image');
+// Capture the image and send to backend
+function captureFace() {
+    // Draw the image on the canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convert the canvas image to a base64 string
+    const imageData = canvas.toDataURL('image/jpeg');
+    
+    // Get the phone number from the input field
+    const phoneNumber = document.getElementById('phone').value;
+    
+    // Check if phone number is valid
+    if (!phoneNumber) {
+        console.error("Phone number is required");
         return;
     }
 
-    try {
-        context.log('Calling Face API...');
-        const faceApiResponse = await axios.post('https://attendance-face.cognitiveservices.azure.com/face/v1.0/detect', {
-            image: faceImage,
-            apiKey: process.env.FACE_API_KEY
-        });
-        
-        context.log('Face API Response:', faceApiResponse.data);
+    // Send the data to the backend
+    sendToBackend(imageData, phoneNumber);
+}
 
-        // Simulate MongoDB insertion logic (replace with actual DB code)
-        const dbResult = await simulateDatabaseInsert();
-        context.log('Database result:', dbResult);
+// Function to send the captured image and phone number to the backend
+function sendToBackend(imageData, phoneNumber) {
+    const data = {
+        image: imageData,
+        phone: phoneNumber
+    };
 
-        context.res = {
-            status: 200,
-            body: { success: true, message: 'Attendance marked successfully!' }
-        };
-    } catch (error) {
-        context.error('Error during function execution:', error.message, error.stack);
-        context.res = {
-            status: 500,
-            body: { success: false, message: 'An error occurred during execution.', error: error.message }
-        };
-    }
-};
+    console.log("Data being sent:", data);  // Add logging to confirm the data being sent
+
+    fetch('https://attendance-function-app.azurewebsites.net/attendance', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)  // Ensure proper JSON format
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Data received:', data);
+        if (data.success) {
+            alert('Attendance marked successfully!');
+        } else {
+            alert('Failed to mark attendance!');
+        }
+    })
+    .catch((error) => {
+        console.error('Error sending data:', error);
+    });
+}
