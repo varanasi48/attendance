@@ -11,7 +11,7 @@
     "@azure/functions": "^3.0.0",
     "axios": "^0.21.1", 
     "mongodb": "^3.6.3", 
-    "@azure/cognitiveservices-face": "^2.0.0",  // Azure Face API SDK
+    "@azure/cognitiveservices-face": "^2.0.0", 
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
