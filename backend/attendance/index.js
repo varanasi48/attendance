@@ -49,4 +49,9 @@ module.exports = async function (context, req) {
             body: { success: false, message: error.message }
         };
     }
-};
+};.
+
+
+console.log("BODY:", req.body);
+console.log("Phone:", phoneNumber);
+console.log("Face Image:", faceImage?.substring(0, 100));
