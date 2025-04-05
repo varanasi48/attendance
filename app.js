@@ -35,7 +35,7 @@ function sendToBackend(imageBase64, phoneNumber) {
         phoneNumber: phoneNumber
     };
 
-    fetch('https://attendance-function-app.azurewebsites.net/api/enroll', {
+    fetch('https://attendance-function-app.azurewebsites.net/backend', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
