@@ -20,4 +20,4 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-CMD ["python", "app.py"]  # Or change to gunicorn if using Flask API
+CMD ["python", "web_app.py"]  # Or change to gunicorn if using Flask API
