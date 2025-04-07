@@ -1,0 +1,6 @@
+Flask
+pymongo
+python-dotenv
+face_recognition
+opencv-python
+kivy
