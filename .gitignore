@@ -1,0 +1,14 @@
+# Ignore environment files
+.env
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore face and attendance data files
+faces.pkl
+attendance.pkl
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
