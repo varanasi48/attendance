@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h5 class="center-align">Attendance Reports</h5>
+{% if error %}
+<p class="red-text center-align">{{ error }}</p>
+{% else %}
+<table class="striped centered highlight responsive-table">
+    <thead class="teal lighten-2 white-text">
+        <tr>
+            <th>Name</th>
+            <th>Phone Number</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in report_data %}
+        <tr>
+            <td>{{ record.name }}</td>
+            <td>{{ record.phone }}</td>
+            <td>
+                {% if record.status == "Present" %}
+                <span class="green-text">Present</span>
+                {% else %}
+                <span class="red-text">Absent</span>
+                {% endif %}
+            </td>
+            <td>{{ record.date }}</td>
+            <td>{{ record.time }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

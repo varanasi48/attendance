@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h5 class="center-align">Mark Attendance</h5>
+<div id="video-container" class="center-align">
+    <img id="video-feed" src="/video_feed" alt="Video Feed" style="border: 2px solid #00796b; max-width: 100%; height: auto;">
+</div>
+<form id="markAttendanceForm" method="POST" action="/mark_attendance" class="center-align">
+    <button class="btn waves-effect waves-light green" type="submit">
+        Mark Attendance
+        <i class="material-icons right">check_circle</i>
+    </button>
+</form>
+<p id="attendanceMessage" class="red-text center-align"></p>
+<script>
+    document.getElementById("markAttendanceForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const response = await fetch("/mark_attendance", { method: "POST" });
+        const result = await response.json();
+        const messageElement = document.getElementById("attendanceMessage");
+        if (result.status === "success") {
+            messageElement.classList.remove("red-text");
+            messageElement.classList.add("green-text");
+            messageElement.innerText = result.message;
+        } else if (result.status === "info") {
+            // Show popup if attendance is already marked
+            alert(result.message);
+        } else {
+            messageElement.classList.remove("green-text", "orange-text");
+            messageElement.classList.add("red-text");
+            messageElement.innerText = result.message;
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <style>
+        nav {
+            background-color: #00796b !important; /* Consistent theme color */
+            margin-bottom: 20px; /* Add spacing below the navigation bar */
+        }
+        .brand-logo {
+            font-size: 1.5rem !important;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 20px; /* Add spacing between the navigation bar and content */
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <a href="/" class="brand-logo center">Face Attendance System</a>
+            <ul id="nav-mobile" class="left hide-on-med-and-down">
+                <li><a href="/register">Register</a></li>
+                <li><a href="/mark_attendance">Mark Attendance</a></li>
+                <li><a href="/reports">Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Attendance System</title>
+    <!-- Import Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Import Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .tabs .tab {
+            text-align: center;
+            width: 33.33%; /* Equal width for each tab */
+        }
+        .tabs .tab a {
+            font-size: 16px;
+        }
+        #video-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #video-container video {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 640px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper blue">
+            <a href="#" class="brand-logo center">Face Attendance System</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col s12">
+                <ul class="tabs centered-tabs">
+                    <li class="tab col s4"><a href="/register" class="blue-text">Register</a></li>
+                    <li class="tab col s4"><a href="/mark_attendance" class="green-text">Mark Attendance</a></li>
+                    <li class="tab col s4"><a href="/reports" class="orange-text">Reports</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col s12 m6">
+                <h5>Live Webcam Feed with Face Detection</h5>
+                <div id="video-container">
+                    <video autoplay playsinline id="video-feed">
+                        <source src="/video_feed" type="multipart/x-mixed-replace; boundary=frame">
+                    </video>
+                </div>
+            </div>
+
+            <div class="col s12 m6">
+                <h5>Register</h5>
+                <form id="registerForm">
+                    <div class="input-field">
+                        <input type="text" id="name" name="name" required>
+                        <label for="name">Name</label>
+                    </div>
+                    <div class="input-field">
+                        <input type="text" id="phone" name="phone" required>
+                        <label for="phone">Phone</label>
+                    </div>
+                    <button class="btn waves-effect waves-light blue" type="submit">
+                        Register
+                        <i class="material-icons right">person_add</i>
+                    </button>
+                </form>
+                <p id="registerMessage" class="red-text"></p>
+            </div>
+
+            <div class="col s12 m6">
+                <h5>Mark Attendance</h5>
+                <form id="markAttendanceForm">
+                    <button class="btn waves-effect waves-light green" type="submit">
+                        Mark Attendance
+                        <i class="material-icons right">check_circle</i>
+                    </button>
+                </form>
+                <p id="attendanceMessage" class="red-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tabs = document.querySelectorAll(".tabs");
+            M.Tabs.init(tabs);
+        });
+
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const phone = document.getElementById("phone").value;
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`
+            });
+            const result = await response.json();
+            document.getElementById("registerMessage").innerText = result.message;
+        });
+
+        document.getElementById("markAttendanceForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const response = await fetch("/mark_attendance", { method: "POST" });
+            const result = await response.json();
+            if (result.status === "success" && result.redirect_url) {
+                window.location.href = result.redirect_url; // Redirect to the reports page
+            } else {
+                document.getElementById("attendanceMessage").innerText = result.message || "An error occurred.";
+            }
+        });
+    </script>
+</body>
+</html>
