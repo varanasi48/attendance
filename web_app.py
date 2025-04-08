@@ -41,6 +41,8 @@ if os.path.exists(FACE_DATA_FILE):
 
 # Initialize webcam
 camera = cv2.VideoCapture(0)
+if not camera.isOpened():
+    print("❌ Failed to initialize the webcam.")
 
 @app.route("/")
 def home():
@@ -51,85 +53,94 @@ def home():
 
 @app.route("/video_feed")
 def video_feed():
-    """Stream the webcam feed with face detection."""
+    """Stream the webcam feed."""
     def generate_frames():
         while True:
             success, frame = camera.read()
             if not success:
                 break
             else:
-                # Convert the frame to RGB for face detection
-                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                face_locations = face_recognition.face_locations(rgb_frame)
-
-                # Draw bounding boxes around detected faces
-                for (top, right, bottom, left) in face_locations:
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-
                 # Encode the frame as JPEG
                 _, buffer = cv2.imencode(".jpg", frame)
                 frame = buffer.tobytes()
                 yield (b"--frame\r\n"
                        b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+        camera.release()  # Release the camera when done
+
     return Response(generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """Render the registration page and handle user registration."""
     if request.method == "GET":
-        if camera.isOpened():
-            camera.release()  # Turn off the camera
+        print("✅ Rendered register.html")
         return render_template("register.html")
-    
-    name = request.form.get("name")
-    phone = request.form.get("phone")
-    if not name or not phone:
-        return jsonify({"status": "error", "message": "Name and phone are required."}), 400
 
-    success, frame = camera.read()
-    if not success:
-        return jsonify({"status": "error", "message": "Failed to access webcam."}), 500
+    try:
+        # Get form data
+        name = request.form.get("name")
+        phone = request.form.get("phone")
+        print(f"Received form data: name={name}, phone={phone}")
 
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    face_locations = face_recognition.face_locations(rgb_frame)
-    if not face_locations:
-        return jsonify({"status": "error", "message": "No face detected. Try again."}), 400
+        # Validate form data
+        if not name or not phone:
+            print("❌ Missing name or phone.")
+            return jsonify({"status": "error", "message": "Name and phone are required."}), 400
 
-    face_encoding = face_recognition.face_encodings(rgb_frame, face_locations)[0]
-    known_face_encodings.append(face_encoding)
-    known_face_names.append(name)
+        # Capture a frame from the webcam
+        success, frame = camera.read()
+        if not success:
+            print("❌ Failed to access webcam.")
+            return jsonify({"status": "error", "message": "Failed to access webcam."}), 500
 
-    with open(FACE_DATA_FILE, "wb") as f:
-        pickle.dump((known_face_encodings, known_face_names), f)
+        # Process the frame (e.g., detect faces)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        face_locations = face_recognition.face_locations(rgb_frame)
+        print(f"Detected face locations: {face_locations}")
+        if not face_locations:
+            print("❌ No face detected.")
+            return jsonify({"status": "error", "message": "No face detected. Please try again."}), 400
 
-    cv2.imwrite(os.path.join(FACES_DIR, f"{name}.jpg"), frame)
+        # Save user data and face encoding
+        face_encoding = face_recognition.face_encodings(rgb_frame, face_locations)[0]
+        known_face_encodings.append(face_encoding)
+        known_face_names.append(name)
 
-    # Save user details to the database
-    now = datetime.now()
-    date = now.strftime("%d-%m-%y %H:%M")
-    record = attendance_collection.find_one({"name": name})
-    if record:
-        attendance_collection.update_one(
-            {"name": name},
-            {
-                "$set": {"phone": phone},
-                "$push": {"attendance": {"date": date, "status": "registered"}}
-            }
-        )
-    else:
-        attendance_collection.insert_one({
-            "name": name,
-            "phone": phone,
-            "attendance": [{"date": date, "status": "registered"}]
-        })
+        with open(FACE_DATA_FILE, "wb") as f:
+            pickle.dump((known_face_encodings, known_face_names), f)
 
-    return jsonify({"status": "success", "message": f"{name} registered successfully!"})
+        cv2.imwrite(os.path.join(FACES_DIR, f"{name}.jpg"), frame)
+
+        # Save user details to the database
+        now = datetime.now()
+        date = now.strftime("%d-%m-%Y %H:%M:%S")
+        record = attendance_collection.find_one({"name": name})
+        if record:
+            attendance_collection.update_one(
+                {"name": name},
+                {
+                    "$set": {"phone": phone},
+                    "$push": {"attendance": {"date": date, "status": "registered"}}
+                }
+            )
+        else:
+            attendance_collection.insert_one({
+                "name": name,
+                "phone": phone,
+                "attendance": [{"date": date, "status": "registered"}]
+            })
+
+        print(f"✅ {name} registered successfully!")
+        return jsonify({"status": "success", "message": f"{name} registered successfully!"})
+    except Exception as e:
+        print(f"❌ An error occurred: {e}")
+        return jsonify({"status": "error", "message": "An internal error occurred."}), 500
 
 @app.route("/mark_attendance", methods=["GET", "POST"])
 def mark_attendance():
     """Render the attendance marking page and handle attendance."""
     if request.method == "GET":
         if not camera.isOpened():
+            print("🔄 Reinitializing the webcam...")
             camera.open(0)  # Ensure the camera is turned on
         return render_template("mark_attendance.html")
     

@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <h5 class="center-align">Register a New User</h5>
+
+<!-- Video Feed Section -->
 <div id="video-container" class="center-align">
     <img id="video-feed" src="/video_feed" alt="Video Feed" style="border: 2px solid #00796b; max-width: 100%; height: auto;">
 </div>
+
+<!-- Registration Form -->
 <form id="registerForm" method="POST" action="/register">
     <div class="input-field">
         <input type="text" id="name" name="name" required>
@@ -15,29 +19,50 @@
     </div>
     <button class="btn waves-effect waves-light blue" type="submit">
         Register
-        
     </button>
 </form>
+
+<!-- Message Display -->
 <p id="registerMessage" class="red-text center-align"></p>
+
+<!-- JavaScript for Form Submission -->
 <script>
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const response = await fetch("/register", {
-            method: "POST",
-            body: formData
-        });
-        const result = await response.json();
-        const messageElement = document.getElementById("registerMessage");
-        if (result.status === "success") {
-            messageElement.classList.remove("red-text");
-            messageElement.classList.add("green-text");
-            messageElement.innerText = result.message;
-        } else {
-            messageElement.classList.remove("green-text");
+        e.preventDefault(); // Prevent default form submission
+        const formData = new FormData(e.target); // Collect form data
+
+        try {
+            const response = await fetch("/register", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            const messageElement = document.getElementById("registerMessage");
+
+            if (result.status === "success") {
+                messageElement.classList.remove("red-text");
+                messageElement.classList.add("green-text");
+                messageElement.innerText = result.message;
+            } else {
+                messageElement.classList.remove("green-text");
+                messageElement.classList.add("red-text");
+                messageElement.innerText = result.message;
+            }
+        } catch (error) {
+            console.error("Error submitting the form:", error);
+            const messageElement = document.getElementById("registerMessage");
             messageElement.classList.add("red-text");
-            messageElement.innerText = result.message;
+            messageElement.innerText = "An error occurred. Please try again.";
         }
     });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const videoFeed = document.getElementById("video-feed");
+    videoFeed.src = "/video_feed";
+});
+</script>
+
 {% endblock %}
