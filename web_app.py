@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify, Response, redirect, url_for
 import cv2
+import face_recognition_models
 import face_recognition
 import os
 import pickle
