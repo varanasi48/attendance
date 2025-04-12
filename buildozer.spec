@@ -75,8 +75,7 @@ osx.kivy_version = 1.9.1
 #
 # Android specific
 #
-android.accept_sdk_license = True
-android.skip_update = False
+
 
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 0
