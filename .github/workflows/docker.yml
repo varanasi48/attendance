@@ -3,23 +3,23 @@ name: Build Android APK with Buildozer
 on:
   push:
     branches:
-      - main  # Trigger this action when there's a push to the main branch
+      - main
   pull_request:
     branches:
-      - main  # Trigger this action on pull requests to the main branch
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use an Ubuntu runner to build the app
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2  # Checkout your code from GitHub
+      uses: actions/checkout@v2
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'  # Specify the version of Python to use
+        python-version: '3.8'
 
     - name: Install Buildozer dependencies
       run: |
@@ -40,19 +40,32 @@ jobs:
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
 
-    - name: Accept Android SDK licenses
+    - name: Install Android SDK components
       run: |
+        echo "Installing required SDK components..."
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-30"
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;36.0.0"  # Adjust version as needed
+
+    - name: Attempt non-interactive license acceptance
+      run: |
+        echo "Attempting non-interactive license acceptance..."
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-30"
 
+    - name: Fallback to interactive license acceptance (if needed)
+      run: |
+        echo "Attempting interactive license acceptance if non-interactive fails..."
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+      continue-on-error: true  # Allow this step to fail without stopping the workflow
 
+    - name: Clean previous build
+      run: |
+        buildozer android clean
 
     - name: Run Buildozer to build the APK
       run: |
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-        # Run Buildozer to build the APK
-        buildozer android debug  # Replace with android release for production
+        buildozer android debug
 
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
