@@ -44,7 +44,7 @@ jobs:
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip git
+          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip libstdc++6 git
           pip install cython
           pip install buildozer
           pip install python-for-android
