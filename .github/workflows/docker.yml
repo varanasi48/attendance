@@ -39,11 +39,20 @@ jobs:
 
     - name: Run Buildozer to build the APK
       run: |
-        buildozer android debug  # You can replace with android release for production
+        buildozer android debug --debug  # Adding --debug for more detailed output
+
+    - name: List files in bin directory
+      run: |
+        ls -l bin/  # Check if APK is generated in the bin folder
 
     - name: Check if APK exists
       run: |
-        ls -l bin/*.apk || exit 1  # This will fail if no APK is found, making it easier to debug
+        if [ -f bin/*.apk ]; then
+          echo "APK found, proceeding with upload."
+        else
+          echo "No APK found. Buildozer might have failed."
+          exit 1
+        fi
 
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v2
