@@ -22,11 +22,15 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libffi-dev libssl-dev build-essential python3-pip git zip unzip openjdk-17-jdk
-        pip install --upgrade pip Cython
-        pip install buildozer
+        sudo apt-get install -y build-essential ccache libffi-dev libssl-dev \
+            python3-setuptools git zip unzip openjdk-17-jdk \
+            zlib1g-dev libncurses5 libncurses5-dev libstdc++6
+
+        pip install --upgrade pip Cython buildozer
 
     - name: Build APK
+      env:
+        PATH: ${{ github.workspace }}/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin:${{ github.workspace }}/.buildozer/android/platform/android-sdk/platform-tools:$PATH
       run: |
         buildozer init || true
         buildozer android debug
