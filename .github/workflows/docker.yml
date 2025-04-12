@@ -2,60 +2,46 @@ name: Build Android APK with Buildozer
 
 on:
   push:
-    branches:
-      - main  # Trigger this action when there's a push to the main branch
+    branches: [main]
   pull_request:
-    branches:
-      - main  # Trigger this action on pull requests to the main branch
+    branches: [main]
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use an Ubuntu runner to build the app
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Checkout your code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4  # Use latest stable version
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'  # Specify the version of Python to use
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
 
-    - name: Install Buildozer dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip
-        pip install buildozer
-        pip install python-for-android
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip
+          pip install --upgrade pip
+          pip install buildozer
+          pip install python-for-android
 
-    - name: Install Android dependencies (Optional)
-      run: |
-        sudo apt-get install -y android-sdk
-        sudo apt-get install -y openjdk-8-jdk
-        # Set environment variables for Android SDK (adjust paths if needed)
-        echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
-        echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
-        echo "PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
+      - name: Install Android dependencies
+        run: |
+          sudo apt-get install -y openjdk-8-jdk unzip zip
+          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+          echo "PATH=$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Run Buildozer to build the APK
-      run: |
-        buildozer android debug --debug  # Adding --debug for more detailed output
+      - name: Run Buildozer
+        run: |
+          buildozer android debug
 
-    - name: List files in bin directory
-      run: |
-        ls -l bin/  # Check if APK is generated in the bin folder
+      - name: List APK files
+        run: ls -al bin/
 
-    - name: Check if APK exists
-      run: |
-        if [ -f bin/*.apk ]; then
-          echo "APK found, proceeding with upload."
-        else
-          echo "No APK found. Buildozer might have failed."
-          exit 1
-        fi
-
-    - name: Upload APK as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: android-apk
-        path: bin/*.apk  # Upload APK located in the bin folder
+      - name: Upload APK
+        uses: actions/upload-artifact@v4  # ✅ Use v4
+        with:
+          name: android-apk
+          path: bin/*.apk
