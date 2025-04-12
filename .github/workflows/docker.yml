@@ -34,17 +34,11 @@ jobs:
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
           $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3" "platform-tools" "platforms;android-29" "build-tools;36.0.0"
-      
-      - name: Install AIDL
-        run: |
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "aidl"
-      
+
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip libstdc++6 git
+          sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip git
           pip install cython
           pip install buildozer
           pip install python-for-android
