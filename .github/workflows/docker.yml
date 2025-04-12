@@ -32,13 +32,21 @@ jobs:
       run: |
         sudo apt-get install -y android-sdk
         sudo apt-get install -y openjdk-8-jdk
+        # Set environment variables for Android SDK (adjust paths if needed)
+        echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
+        echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+        echo "PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
 
     - name: Run Buildozer to build the APK
       run: |
         buildozer android debug  # You can replace with android release for production
 
+    - name: Check if APK exists
+      run: |
+        ls -l bin/*.apk || exit 1  # This will fail if no APK is found, making it easier to debug
+
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v2
       with:
         name: android-apk
-        path: bin/*.apk
+        path: bin/*.apk  # Upload APK located in the bin folder
