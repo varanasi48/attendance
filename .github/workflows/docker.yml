@@ -32,9 +32,9 @@ jobs:
         mv cmdline-tools/cmdline-tools cmdline-tools/latest
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+        # Accept licenses in non-interactive mode
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-        # Install essential tools including build-tools and platforms
-        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3" "platform-tools" "platforms;android-29" "build-tools;36.0.0" "platforms;android-30"
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-30"
 
     - name: Install Buildozer dependencies
       run: |
