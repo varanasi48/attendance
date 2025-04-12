@@ -57,9 +57,7 @@ jobs:
         $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
       continue-on-error: true  # Allow this step to fail without stopping the workflow
 
-    - name: Clean previous build
-      run: |
-        buildozer android clean
+   
 
     - name: Run Buildozer to build the APK
       run: |
