@@ -45,10 +45,7 @@ jobs:
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
         $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-30"
 
-    - name: Clean previous build
-      run: |
-        # Run Buildozer clean to remove any old artifacts
-        buildozer android clean
+
 
     - name: Run Buildozer to build the APK
       run: |
