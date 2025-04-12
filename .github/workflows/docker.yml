@@ -21,10 +21,17 @@ jobs:
       with:
         python-version: '3.8'  # Specify the version of Python to use
 
-    - name: Install Android SDK Command Line Tools
+    - name: Install Buildozer dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y openjdk-8-jdk wget unzip
+        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip git wget unzip
+        pip install cython
+        pip install buildozer
+        pip install python-for-android
+
+    - name: Install Android SDK Command Line Tools
+      run: |
+        sudo apt-get install -y openjdk-8-jdk
         mkdir -p "$HOME/android-sdk/cmdline-tools"
         cd "$HOME/android-sdk"
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
@@ -33,34 +40,22 @@ jobs:
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
 
-        # Accept licenses non-interactively
+    - name: Accept Android SDK licenses
+      run: |
         yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-        # Install required SDK packages
         $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-30"
-        # Verify AIDL installation
-        aidl --version || echo "AIDL not found"
 
-    - name: Install Buildozer dependencies
+    - name: Clean previous build
       run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip git
-        pip install cython
-        pip install buildozer
-        pip install python-for-android
-
-    - name: Check for AIDL in Android SDK
-      run: |
-        # Ensure AIDL can be found
-        if ! command -v aidl &>/dev/null; then
-          echo "AIDL is not installed. Trying to install it manually."
-          sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-30" || echo "Failed to install necessary AIDL tools"
-        fi
+        # Run Buildozer clean to remove any old artifacts
+        buildozer android clean
 
     - name: Run Buildozer to build the APK
       run: |
         export ANDROID_SDK_ROOT=$HOME/android-sdk
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-        buildozer android debug  # You can replace with android release for production
+        # Run Buildozer to build the APK
+        buildozer android debug  # Replace with android release for production
 
     - name: Upload APK as artifact
       uses: actions/upload-artifact@v4
