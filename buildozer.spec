@@ -76,6 +76,7 @@ osx.kivy_version = 1.9.1
 # Android specific
 #
 
+
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 0
 
