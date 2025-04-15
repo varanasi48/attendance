@@ -1,9 +1,22 @@
+from dotenv import load_dotenv
+import urllib
+import os
+load_dotenv()  # Ensure the environment variables are loaded first
+
 from pymongo import MongoClient
 from env import MONGO_CONNECTION_STRING
 
-# MongoDB connection setup
-client = MongoClient(MONGO_CONNECTION_STRING)
-db = client["attendanceDB"]
+load_dotenv()
+username = os.getenv("MONGO_USERNAME")
+password = os.getenv("MONGO_PASSWORD")  # Replace with your actual usernam
+encoded_password = urllib.parse.quote_plus(password)
+encoded_username = urllib.parse.quote_plus(username
+
+)
+
+# Replace "password" in the connection string with the encoded one
+raw_url = os.getenv("MONGO_CONNECTION_STRING")
+mongo_url = raw_url.format(username=encoded_username, password=encoded_password)
 
 # Define schema for the "attendance" collection
 def initialize_collections():
